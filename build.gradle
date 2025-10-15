@@ -3,6 +3,7 @@ plugins {
 	alias(libs.plugins.io.spring.dependency.management)
 	id "nebula.integtest" version "8.2.0"
 	id 'java'
+	id "fi.evident.beanstalk" version "0.3.3"
 }
 
 repositories {
@@ -27,4 +28,26 @@ dependencies {
 tasks.withType(Test).configureEach {
 	useJUnitPlatform()
 	
+}
+
+// beanstalk requires unique version number for each uploaded archive
+// SNAPSHOT will be replaced with 'yyyyMMdd.HHmms' label
+version = '0.1-SNAPSHOT'
+
+task beanstalkArchive(type: Zip, dependsOn: jar) {
+	from 'src/main/eb'
+	from tasks.bootJar
+}
+
+beanstalk {
+	s3Endpoint = "s3.us-east-2.amazonaws.com"
+	beanstalkEndpoint = "elasticbeanstalk.us-east-2.amazonaws.com"
+
+	deployments {
+		bobbyAws {
+			war = tasks.beanstalkArchive
+			application = 'bike-tracker'
+			environment = 'java-env'
+		}
+	}
 }
