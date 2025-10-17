@@ -31,7 +31,7 @@ import org.springframework.web.bind.annotation.GetMapping;
  * @author Rob Winch
  */
 @Controller
-public class OAuth2LoginController {
+public class IndexController {
 
 	@GetMapping("/")
 	public String index(Model model, @RegisteredOAuth2AuthorizedClient OAuth2AuthorizedClient authorizedClient,

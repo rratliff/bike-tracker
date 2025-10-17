@@ -37,6 +37,7 @@ version = '0.1-SNAPSHOT'
 task beanstalkArchive(type: Zip, dependsOn: jar) {
 	from 'src/main/eb'
 	from tasks.bootJar
+    from 'application.yml'
 }
 
 beanstalk {

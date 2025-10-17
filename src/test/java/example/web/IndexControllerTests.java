@@ -37,12 +37,12 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
 
 /**
- * Tests for {@link OAuth2LoginController}
+ * Tests for {@link IndexController}
  *
  * @author Josh Cummings
  */
-@WebMvcTest(OAuth2LoginController.class)
-public class OAuth2LoginControllerTests {
+@WebMvcTest(IndexController.class)
+public class IndexControllerTests {
 
 	@Autowired
 	MockMvc mvc;
