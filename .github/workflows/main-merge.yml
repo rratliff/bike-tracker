@@ -1,11 +1,12 @@
 # This workflow will build a Java project with Gradle and cache/restore any dependencies to improve the workflow execution time
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-gradle
 
-name: Pull Request
+name: Main - Merge
 
 on:
-  pull_request:
+  push:
     branches: [ "main" ]
+  workflow_dispatch:
 
 jobs:
   build:
@@ -29,6 +30,29 @@ jobs:
 
     - name: Build with Gradle Wrapper
       run: ./gradlew build
+
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+      - name: configure aws credentials
+        uses: aws-actions/configure-aws-credentials@e3dd6a429d7300a6a4c196c26e071d42e0343502 # v4.0.2
+        with:
+          role-to-assume: GithubActionsElasticBeanstalk
+          aws-region: us-east-2
+      # Deploy to AWS Elastic Beanstalk
+      - name: Additional steps
+        run: |
+          # Your commands that require AWS credentials
+          aws sts get-caller-identity 
 
   dependency-submission:
 
