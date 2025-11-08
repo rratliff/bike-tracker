@@ -3,7 +3,7 @@
 
 # ---- Configuration ----
 #domain - The domain for which you want to generate the certificate (comma separated for multiple domains) ex: `myapp.acme.com,myapp-staging.acme.com`
-#contact - The email address to use for Let's Encrypt
+#LE_CONTACT - The email address to use for Let's Encrypt
 #bucket - The S3 bucket to use for storing the certificates
 #test_mode -  Set to `false` to use the Let's Encrypt production server and get a valid certificate. Test certificates are not trusted by browsers, but are useful for testing the deployment.
 #environment - The Elastic Beanstalk environment name (test, production, etc.)
@@ -53,9 +53,9 @@ if [ -n "$(aws s3 ls $folder)" ]; then
     sudo chown -R root:root /etc/letsencrypt
 
     if [ "$test_mode" = true ]; then
-        sudo certbot -n -d ${domain} --nginx --agree-tos --email ${contact} --reinstall --redirect --expand --allow-subset-of-names --test-cert
+        sudo certbot -n -d ${domain} --nginx --agree-tos --email ${LE_CONTACT} --reinstall --redirect --expand --allow-subset-of-names --test-cert
     else
-        sudo certbot -n -d ${domain} --nginx --agree-tos --email ${contact} --reinstall --redirect --expand --allow-subset-of-names
+        sudo certbot -n -d ${domain} --nginx --agree-tos --email ${LE_CONTACT} --reinstall --redirect --expand --allow-subset-of-names
     fi
     systemctl reload nginx
 
@@ -70,10 +70,10 @@ fi
 # obtain, install, and upload certificate to S3 bucket since it does not exist already
 if [ "$test_mode" = true ]; then
     #get a test mode cert
-    sudo certbot -n -d ${domain} --nginx --agree-tos --email ${contact} --redirect --allow-subset-of-names --test-cert
+    sudo certbot -n -d ${domain} --nginx --agree-tos --email ${LE_CONTACT} --redirect --allow-subset-of-names --test-cert
 else
     #get a production cert
-    sudo certbot -n -d ${domain} --nginx --agree-tos --email ${contact} --redirect --allow-subset-of-names
+    sudo certbot -n -d ${domain} --nginx --agree-tos --email ${LE_CONTACT} --redirect --allow-subset-of-names
 fi
 
 tar -czvf /tmp/backup.tar.gz /etc/letsencrypt/*
