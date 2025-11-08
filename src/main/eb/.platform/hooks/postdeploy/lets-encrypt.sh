@@ -12,7 +12,7 @@
 
 domain="app.wow-girl.net"
 bucket="my-ssl-certificates-bucket"
-test_mode=true
+test_mode=false
 environment="java-env"
 # -----------------------
 
