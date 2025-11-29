@@ -16,13 +16,10 @@ test_mode=false
 environment="java-env"
 # -----------------------
 
-# increase server_names_hash_bucket_size to 128 to handle long domain names in nginx
-sed -i 's/http {/http {\n    server_names_hash_bucket_size 128;/' /etc/nginx/nginx.conf
-
 #add cron job
 function add_cron_job {
     touch /etc/cron.d/certbot_renew
-    echo "* * * * * webapp 0 2 * * * certbot renew --allow-subset-of-names
+    echo "0 2 * * * webapp certbot renew --allow-subset-of-names
     # empty line" | tee /etc/cron.d/certbot_renew
 }
 
@@ -64,6 +61,7 @@ if [ -n "$(aws s3 ls $folder)" ]; then
     aws s3 cp /tmp/backup.tar.gz ${folder}
 
     add_cron_job
+    systemctl list-timers certbot.timer
     exit
 fi
 
