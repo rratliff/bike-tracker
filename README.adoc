@@ -1,22 +1,22 @@
-= OAuth 2.0 Login Sample
+= Bike Tracker
 
-This guide provides instructions on setting up the sample application with OAuth 2.0 Login using an OAuth 2.0 Provider or OpenID Connect 1.0 Provider.
-The sample application uses Spring Boot 2.5 and the `spring-security-oauth2-client` module which is new in Spring Security 5.0.
-
-The following sections provide detailed steps for setting up OAuth 2.0 Login for these Providers:
+Private version of Strava: Track rides, compete with friends. Sign in with Google.
 
 * <<google-login, Google>>
 * <<aws-deployment, AWS Deployment with Elastic Beanstalk>>
+* <<local-db, Local database (Docker Compose)>>
+* <<aws-rds-secrets, AWS RDS + Secrets Manager configuration>>
 
 [[google-login]]
 == Login with Google
 
-This section shows how to configure the sample application using Google as the Authentication Provider and covers the following topics:
+This section shows how to configure the Bike Tracker using Google as the Authentication Provider and covers the following topics:
 
 * <<google-initial-setup,Initial setup>>
 * <<google-redirect-uri,Setting the redirect URI>>
 * <<google-application-config,Configure application.yml>>
 * <<google-boot-application,Boot up the application>>
+* <<google-user-registration,User registration>>
 
 [[google-initial-setup]]
 === Initial setup
@@ -57,8 +57,8 @@ spring:
   security:
     oauth2:
       client:
-        registration:	<1>
-          google:		<2>
+        registration:  # <1>
+          google:  # <2>
             client-id: google-client-id
             client-secret: google-client-secret
 ----
@@ -86,6 +86,23 @@ Click *Allow* to authorize the OAuth Client to access your email address and bas
 At this point, the OAuth Client retrieves your email address and basic profile information
 from the https://openid.net/specs/openid-connect-core-1_0.html#UserInfo[UserInfo Endpoint] and establishes an authenticated session.
 
+[[google-user-registration]]
+=== User Registration
+
+User Registration is currently hard-coded based on a user existing in the `t_user` table.
+
+Example manual registration:
+
+```
+insert into t_user (oauth_subject) values (the google user id you wish to register);
+```
+
+This can be done locally using:
+
+```
+docker run -it --network bike-tracker_default postgres:15 psql -h bike_tracker_postgres -U biketracker
+```
+
 [[aws-deployment]]
 == AWS Elastic Beanstalk Deployment
 
@@ -97,3 +114,51 @@ Step 2: Execute deployment using Gradle:
 ----
 ./gradlew deployBobbyAws
 ----
+
+[[local-db]]
+== Local database (Docker Compose)
+
+This project includes a `docker-compose.yml` to run a local PostgreSQL instance for development.
+
+.Start Postgres locally
+[source]
+----
+docker compose up -d
+----
+
+- Connection details (match `application.yml.sample`):
+  - Host: `localhost`
+  - Port: `5432`
+  - Database: `biketracker`
+  - Username: `biketracker`
+  - Password: `biketracker`
+
+To use the local database settings, copy `application.yml.sample` to `application.yml` and adjust any other values (for example, Google OAuth client credentials).
+
+[[aws-rds-secrets]]
+== AWS RDS + Secrets Manager configuration
+
+This project is configured to use the AWS Secrets Manager JDBC Driver . With this option, the JDBC driver fetches the database username/password from a Secrets Manager secret at runtime.
+
+=== Steps
+1. Create an RDS PostgreSQL instance (or use an existing one).
+2. Identify the RDS master credentials secret in AWS Secrets Manager.
+3. Grant the application runtime role (for example, the Elastic Beanstalk EC2 instance profile) permissions to read the secret:
+   - `secretsmanager:GetSecretValue`
+   - (optional) `secretsmanager:DescribeSecret`
+   - Scope the policy to the specific secret ARN.
+4. In `application.yml`, set the datasource URL using the AWS Secrets Manager JDBC URL and the secret ARN via `userSecretId`. Example:
+[source,yaml]
+----
+spring:
+  datasource:
+    driver-class-name: com.amazonaws.secretsmanager.sql.AWSSecretsManagerPostgreSQLDriver
+    url: jdbc-secretsmanager:postgresql://YOUR_DB_HOST:5432/YOUR_DB_NAME?userSecretId=arn:aws:secretsmanager:REGION:ACCOUNT_ID:secret:YOUR_RDS_MASTER_SECRET_ID
+----
+
+Replace `YOUR_DB_HOST`, `YOUR_DB_NAME`, `REGION`, `ACCOUNT_ID`, and the secret ID accordingly. Do not set `spring.datasource.username` or `spring.datasource.password`; the driver reads them from the secret.
+
+=== Notes
+- Ensure network access from your application to the RDS instance (VPC/subnet/security groups).
+- For TLS, configure Postgres SSL if required and include the appropriate RDS CA certificates. For PostgreSQL, you may add `?sslmode=require` to the JDBC URL.
+- You can enable rotation on the secret; new connections will pick up rotated credentials automatically with the Secrets Manager JDBC driver.

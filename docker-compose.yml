@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:15
+    container_name: bike_tracker_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: biketracker
+      POSTGRES_USER: biketracker
+      POSTGRES_PASSWORD: biketracker
+    ports:
+      - "5432:5432"  # Host port : Container port
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:

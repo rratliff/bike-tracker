@@ -16,7 +16,11 @@
 
 package example.web;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.client.registration.ClientRegistration;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.annotation.RegisteredOAuth2AuthorizedClient;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -33,13 +37,32 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class IndexController {
 
-	@GetMapping("/")
-	public String index(Model model, @RegisteredOAuth2AuthorizedClient OAuth2AuthorizedClient authorizedClient,
-			@AuthenticationPrincipal OAuth2User oauth2User) {
-		model.addAttribute("userName", oauth2User.getName());
-		model.addAttribute("clientName", authorizedClient.getClientRegistration().getClientName());
-		model.addAttribute("userAttributes", oauth2User.getAttributes());
-		return "index";
-	}
+    private final ClientRegistrationRepository clientRegistrationRepository;
+
+    @Autowired
+    public IndexController(ClientRegistrationRepository clientRegistrationRepository) {
+        this.clientRegistrationRepository = clientRegistrationRepository;
+    }
+
+    @GetMapping("/")
+    public String index(Model model,
+                        @AuthenticationPrincipal OAuth2User oauth2User,
+                        OAuth2AuthenticationToken oauth2Auth,
+                        @RegisteredOAuth2AuthorizedClient OAuth2AuthorizedClient authorizedClient) {
+        if (oauth2Auth != null && oauth2User != null) {
+            if (authorizedClient != null) {
+                model.addAttribute("clientName", authorizedClient.getClientRegistration().getClientName());
+            } else if (oauth2Auth.getAuthorizedClientRegistrationId() != null) {
+                ClientRegistration clientRegistration = this.clientRegistrationRepository
+                    .findByRegistrationId(oauth2Auth.getAuthorizedClientRegistrationId());
+                if (clientRegistration != null) {
+                    model.addAttribute("clientName", clientRegistration.getClientName());
+                }
+            }
+            model.addAttribute("userName", oauth2User.getName());
+            model.addAttribute("userAttributes", oauth2User.getAttributes());
+        }
+        return "index";
+    }
 
 }

@@ -10,3 +10,14 @@ logging:
 spring:
   thymeleaf:
     cache: false
+
+  datasource:
+    # AWS Secrets Manager JDBC driver (uses RDS secret for credentials)
+    driver-class-name: com.amazonaws.secretsmanager.sql.AWSSecretsManagerPostgreSQLDriver
+    url: jdbc-secretsmanager:postgresql://YOUR_DB_HOST:5432/YOUR_DB_NAME?userSecretId=arn:aws:secretsmanager:REGION:ACCOUNT_ID:secret:YOUR_RDS_MASTER_SECRET_ID
+    # Do not set username/password here; the driver reads them from Secrets Manager
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      max-lifetime: 1800000
+      connection-timeout: 30000
