@@ -25,9 +25,7 @@ public class SecurityConfig {
                         userInfo.oidcUserService(oidcUserService);
                     }
                 })
-            )
-            // After logout, redirect to the login page with a logout flag so the default login page shows a message
-            .logout(l -> l.logoutSuccessUrl("/login?logout"));
+            );
 
         return http.build();
     }

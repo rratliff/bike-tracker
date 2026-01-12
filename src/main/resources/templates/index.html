@@ -5,10 +5,6 @@
 	<meta charset="utf-8" />
 </head>
 <body>
-<div th:if="${param.logout}" style="background:#e6ffed;border:1px solid #b6f2c2;padding:10px;margin-bottom:10px;">
-    You have been logged out.
-    <a th:href="@{/login}">Log in again</a>
-}</div>
 <div style="float: right" th:fragment="logout" sec:authorize="isAuthenticated()">
 	<div style="float:left">
 		<span style="font-weight:bold">User: </span><span sec:authentication="name"></span>
