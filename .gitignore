@@ -3,6 +3,8 @@ build/
 
 # secrets
 application.yml
+.env
+
 # Elastic Beanstalk Files
 .elasticbeanstalk/*
 !.elasticbeanstalk/*.cfg.yml
