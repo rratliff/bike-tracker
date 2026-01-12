@@ -16,7 +16,7 @@ public class SecurityConfig {
 
         http
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/public/**", "/css/**", "/js/**").permitAll()
+                .requestMatchers("/", "/login").permitAll()
                 .anyRequest().authenticated()
             )
             .oauth2Login(oauth -> oauth
@@ -25,6 +25,7 @@ public class SecurityConfig {
                         userInfo.oidcUserService(oidcUserService);
                     }
                 })
+                .loginPage("/login")
             );
 
         return http.build();
