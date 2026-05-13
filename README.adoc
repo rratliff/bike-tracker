@@ -3,9 +3,9 @@
 Private version of Strava: Track rides, compete with friends. Sign in with Google.
 
 * <<google-login, Google>>
-* <<aws-deployment, AWS Deployment with Elastic Beanstalk>>
+* <<deployment, Deployment with Heroku>>
 * <<local-db, Local database (Docker Compose)>>
-* <<aws-rds-secrets, AWS RDS + Secrets Manager configuration>>
+* <<database, Heroku database>>
 
 [[google-login]]
 == Login with Google
@@ -103,17 +103,10 @@ This can be done locally using:
 docker run -it --network bike-tracker_default postgres:15 psql -h bike_tracker_postgres -U biketracker
 ```
 
-[[aws-deployment]]
-== AWS Elastic Beanstalk Deployment
+[[deployment]]
+== Heroku Deployment with Github Integration
 
-Step 1: Acquire credentials
-
-Step 2: Execute deployment using Gradle:
-
-[source]
-----
-./gradlew deployBobbyAws
-----
+* [Heroku Github Integration](https://devcenter.heroku.com/articles/github-integration)
 
 [[local-db]]
 == Local database (Docker Compose)
@@ -135,30 +128,7 @@ docker compose up -d
 
 To use the local database settings, copy `application.yml.sample` to `application.yml` and adjust any other values (for example, Google OAuth client credentials).
 
-[[aws-rds-secrets]]
-== AWS RDS + Secrets Manager configuration
+[[database]]
+== Database
 
-This project is configured to use the AWS Secrets Manager JDBC Driver . With this option, the JDBC driver fetches the database username/password from a Secrets Manager secret at runtime.
 
-=== Steps
-1. Create an RDS PostgreSQL instance (or use an existing one).
-2. Identify the RDS master credentials secret in AWS Secrets Manager.
-3. Grant the application runtime role (for example, the Elastic Beanstalk EC2 instance profile) permissions to read the secret:
-   - `secretsmanager:GetSecretValue`
-   - (optional) `secretsmanager:DescribeSecret`
-   - Scope the policy to the specific secret ARN.
-4. In `application.yml`, set the datasource URL using the AWS Secrets Manager JDBC URL and the secret ARN via `userSecretId`. Example:
-[source,yaml]
-----
-spring:
-  datasource:
-    driver-class-name: com.amazonaws.secretsmanager.sql.AWSSecretsManagerPostgreSQLDriver
-    url: jdbc-secretsmanager:postgresql://YOUR_DB_HOST:5432/YOUR_DB_NAME?userSecretId=arn:aws:secretsmanager:REGION:ACCOUNT_ID:secret:YOUR_RDS_MASTER_SECRET_ID
-----
-
-Replace `YOUR_DB_HOST`, `YOUR_DB_NAME`, `REGION`, `ACCOUNT_ID`, and the secret ID accordingly. Do not set `spring.datasource.username` or `spring.datasource.password`; the driver reads them from the secret.
-
-=== Notes
-- Ensure network access from your application to the RDS instance (VPC/subnet/security groups).
-- For TLS, configure Postgres SSL if required and include the appropriate RDS CA certificates. For PostgreSQL, you may add `?sslmode=require` to the JDBC URL.
-- You can enable rotation on the secret; new connections will pick up rotated credentials automatically with the Secrets Manager JDBC driver.

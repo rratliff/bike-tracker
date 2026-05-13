@@ -38,25 +38,5 @@ tasks.withType(Test).configureEach {
 	
 }
 
-// beanstalk requires unique version number for each uploaded archive
 // SNAPSHOT will be replaced with 'yyyyMMdd.HHmms' label
 version = '0.1-SNAPSHOT'
-
-task beanstalkArchive(type: Zip, dependsOn: jar) {
-	from 'src/main/eb'
-	from tasks.bootJar
-    from 'application.yml'
-}
-
-beanstalk {
-	s3Endpoint = "s3.us-east-2.amazonaws.com"
-	beanstalkEndpoint = "elasticbeanstalk.us-east-2.amazonaws.com"
-
-	deployments {
-		bobbyAws {
-			war = tasks.beanstalkArchive
-			application = 'bike-tracker'
-			environment = 'java-env'
-		}
-	}
-}
