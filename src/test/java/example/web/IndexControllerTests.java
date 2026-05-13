@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
@@ -47,7 +47,7 @@ public class IndexControllerTests {
 	@Autowired
 	MockMvc mvc;
 
-	@MockBean
+	@MockitoBean
 	ClientRegistrationRepository clientRegistrationRepository;
 
 	@Test
@@ -64,9 +64,11 @@ public class IndexControllerTests {
 	void rootWhenOverridingClientRegistrationReturnsAccordingly() throws Exception {
 		// @formatter:off
 		ClientRegistration clientRegistration = ClientRegistration.withRegistrationId("test")
-			.authorizationGrantType(AuthorizationGrantType.PASSWORD)
+			.authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
 			.clientId("my-client-id")
 			.clientName("my-client-name")
+			.redirectUri("https://redirect-uri.example.org")
+			.authorizationUri("https://authorization-uri.example.org")
 			.tokenUri("https://token-uri.example.org")
 			.build();
 
