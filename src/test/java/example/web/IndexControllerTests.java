@@ -64,9 +64,11 @@ public class IndexControllerTests {
 	void rootWhenOverridingClientRegistrationReturnsAccordingly() throws Exception {
 		// @formatter:off
 		ClientRegistration clientRegistration = ClientRegistration.withRegistrationId("test")
-			.authorizationGrantType(AuthorizationGrantType.PASSWORD)
+			.authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
 			.clientId("my-client-id")
 			.clientName("my-client-name")
+			.redirectUri("https://redirect-uri.example.org")
+			.authorizationUri("https://authorization-uri.example.org")
 			.tokenUri("https://token-uri.example.org")
 			.build();
 
